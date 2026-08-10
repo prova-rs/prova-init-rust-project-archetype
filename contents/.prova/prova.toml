@@ -1,4 +1,5 @@
-# The project's quality surface, driven through prova. Run `prova` from the project root.
+# The project's quality surface, driven through prova (retrofitted by `prova init rust-project`).
+# Run `prova` from the project root.
 #
 # This manifest lives in the `.prova/` nook, so prova's own files tuck away while your proofs stay
 # visible at the project root (the nook's parent — discovery walks up to it). Every path below
@@ -6,8 +7,8 @@
 #
 # The bar, at a glance (`prova run --list` says the same thing):
 #
-#   prova                 the black-box suite + the fast gates (file sizes) — the inner loop
-#   prova run quality     clippy -D warnings, the unwrap/expect census, duplication — ratcheted
+#   prova                 build smoke + the project's black-box proofs — the inner loop
+#   prova run quality     clippy -D warnings, unwrap/expect census, duplication, file sizes
 #   prova run ut          unit tests, conducted once via cargo nextest and adopted into the account
 #   prova run coverage    line coverage, ratcheted against the committed baseline
 #   prova run all         the pre-push sweep: proofs + ut + quality, one exit code
@@ -25,11 +26,10 @@ proofs   = ["proofs"]           # directory-name patterns; your proof suites liv
 config   = ".prova/config.lua"  # the runtime companion — where capabilities are registered
 packages = ".prova/packages"    # this project's own packages; `require("<dir>")` reaches each one
 
-# The heavy, cargo-based quality gates (clippy, the unwrap/expect census, duplication under
-# proofs/quality/) each recompile or rescan the workspace, so they never run because a person typed
+# The cargo-based quality gates (clippy, the unwrap/expect census, duplication, file sizes under
+# proofs/quality/) recompile or rescan the workspace, so they never run because a person typed
 # `prova` — they sit behind the `quality` switch. This profile scopes to the proofs/quality/ dir
-# (positive selection: nothing else can creep in) and throws the switch; the fast file-size gate in
-# the same dir carries no switch, so it runs in the default loop too. Ad hoc: `prova -s quality`.
+# (positive selection: nothing else can creep in) and throws the switch. Ad hoc: `prova -s quality`.
 [profiles.quality]
 description = "code-quality gates: clippy -D warnings, the unwrap/expect ratchet, duplication, file sizes (recompiles the workspace)"
 proofs      = ["quality"]

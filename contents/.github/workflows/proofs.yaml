@@ -63,8 +63,8 @@ jobs:
         with:
           tool: cargo-nextest
 
-      # Conducts nextest once (fail-fast off in .config/nextest.toml, so one conduct reports EVERY
-      # failing case), adopts all cases into the account, and the claim-bound readers hold.
+      # Conducts nextest once (fail-fast off in .prova/nextest.toml, handed to nextest as tool
+      # config so one conduct reports EVERY failing case), and adopts all cases into the account.
       - name: Unit tests (prova run ut)
         uses: prova-rs/run-action@v1
         with:

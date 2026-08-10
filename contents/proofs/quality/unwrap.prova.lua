@@ -2,8 +2,9 @@
 -- panics. Test code uses them freely (idiomatic), so we count only lib+bin targets via clippy's
 -- restriction lints, which exclude tests, and ratchet the counts against the committed baseline in
 -- .prova/baselines/quality.json (lower is better). No new ones allowed; removing them is welcome —
--- run `prova run quality --update-baseline` to tighten the floor once you have. The scaffold
--- starts every count at zero: the strongest floor is the one you never had to dig back up to.
+-- run `prova run quality --update-baseline` to tighten the floor once you have. The ritual
+-- establishes the floors wherever the project stands: zero on a fresh tree, the honest count on a
+-- legacy one — existing debt becomes ratcheted standing debt, not a wall of red.
 --
 -- HEAVY (recompiles with the restriction lints enabled): behind the `quality` switch, same as the
 -- clippy wall. One clippy invocation feeds all three counts via a file-scoped fixture.

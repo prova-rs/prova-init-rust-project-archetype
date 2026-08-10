@@ -1,26 +1,20 @@
--- Quality gate: no Rust source file grows without bound. A big file is where bugs hide and where
--- an agent loses the thread, so oversized files are a red condition that forces a refactor.
+-- Quality gate: oversized source files do not multiply. A big file is where bugs hide and where
+-- an agent loses the thread — but a retrofit cannot know which giants are legacy, so nothing here
+-- hard-fails on day one. The COUNT of files past the limit is ratcheted: the ritual establishes
+-- it wherever the project stands (existing giants become standing debt, not a wall of red),
+-- growth past the floor is red, and every paydown is banked with --update-baseline.
 --
--- Posture (Mix): a HARD limit for new files; a legacy giant can be GRANDFATHERED — recorded here as
--- known debt so the suite stays green today, but each one carries a graduation check (drops to <=
--- LIMIT -> FAILS demanding delisting) AND a per-file line-count ratchet: growth past the committed
--- baseline is red, every shrink is banked by --update-baseline. Grandfather sparingly, with a
--- paydown note.
+-- The honest tradeoff vs a hard limit with a grandfather list: while the count is above zero, a
+-- NEW giant appearing in the same run an old one is paid down can hide inside a flat count —
+-- which is why every offender is named in the output below. Once the count reaches zero, this
+-- ratchet IS the hard limit.
 --
--- This gate carries NO switch, deliberately: a file scan is cheap, so it runs on every plain
--- `prova` — the fast half of the quality surface rides the inner loop.
+-- Layout-agnostic: the roots scanned come from `cargo metadata` (lib.src_roots), never from an
+-- assumed directory shape — a single crate and a many-member workspace both answer correctly.
+
+local lib = require("lib")
 
 local LIMIT = 1500
-
--- Source trees this gate scans. One crate to start; add each crate's src root as the workspace
--- grows (never target/ or tests).
-local SRC_ROOTS = {
-	"src",
-}
-
--- Known giants, repo-relative — e.g. ["src/parser.rs"] = true. Empty on a fresh scaffold, and the
--- pressure of this gate is what keeps it that way.
-local GRANDFATHERED = {}
 
 -- wc -l semantics: count newlines, so the numbers match a plain `wc -l` and each other.
 local function line_count(path)
@@ -28,18 +22,16 @@ local function line_count(path)
 	return n
 end
 
--- fs.glob's base is a concrete dir; "*.rs" catches files directly under it and "**/*.rs" the nested
--- ones. Globbing both and de-duping is robust regardless of whether "**" also matches depth zero.
-local function source_files()
-	local prefix = prova.root .. "/"
+-- fs.glob's base is a concrete dir; "*.rs" catches files directly under it and "**/*.rs" the
+-- nested ones. Globbing both and de-duping is robust regardless of whether "**" matches depth zero.
+local function source_files(roots)
 	local seen, out = {}, {}
-	for _, root in ipairs(SRC_ROOTS) do
+	for _, root in ipairs(roots) do
 		for _, pat in ipairs({ "*.rs", "**/*.rs" }) do
-			for _, path in ipairs(fs.glob(prefix .. root, pat)) do
+			for _, path in ipairs(fs.glob(root, pat)) do
 				if not seen[path] then
 					seen[path] = true
-					local rel = path:sub(1, #prefix) == prefix and path:sub(#prefix + 1) or path
-					out[#out + 1] = { path = path, rel = rel }
+					out[#out + 1] = path
 				end
 			end
 		end
@@ -47,28 +39,23 @@ local function source_files()
 	return out
 end
 
-prova.test("no source file exceeds " .. LIMIT .. " lines (giants grandfathered, tracked for paydown)", function(t)
-	local files = source_files()
-	-- Vacuity guard: a broken glob/root would make every assertion below trivially pass.
-	t:expect(#files, "no source files scanned — SRC_ROOTS or glob is wrong"):gt(0)
+prova.test("oversized source files (> " .. LIMIT .. " lines) do not multiply past the baseline", {
+	switch = "quality",
+	requires = { "cargo" },
+}, function(t)
+	local files = source_files(lib.src_roots(t:use(lib.metadata)))
+	-- Vacuity guard: zero scanned files means the discovery broke, not that the project is clean.
+	t:expect(#files, "no source files scanned — cargo metadata found no member src/ roots"):gt(0)
 
-	for _, f in ipairs(files) do
-		local n = line_count(f.path)
-		if GRANDFATHERED[f.rel] then
-			-- Still legitimately a giant. When it finally drops to <= LIMIT this fails, demanding you
-			-- remove it from GRANDFATHERED — the graduation / paydown signal.
-			t:expect(n, f.rel .. " is now <= " .. LIMIT .. " lines — remove it from GRANDFATHERED (paid down!)"):gt(LIMIT)
-		else
-			t:expect(n, f.rel .. " is " .. n .. " lines (> " .. LIMIT .. ") — split it, or grandfather it with a paydown note"):never():gt(LIMIT)
+	local prefix = prova.root .. "/"
+	local over = 0
+	for _, path in ipairs(files) do
+		local n = line_count(path)
+		if n > LIMIT then
+			over = over + 1
+			local rel = path:sub(1, #prefix) == prefix and path:sub(#prefix + 1) or path
+			print(string.format("  oversized  %-60s %6d lines", rel, n))
 		end
 	end
-end)
-
-prova.test("the grandfathered giants do not grow — each file's line count is ratcheted", { switch = "quality" }, function(t)
-	-- The debt, numerically: growth past a giant's committed baseline is red; a shrink is banked
-	-- with --update-baseline.
-	for rel in pairs(GRANDFATHERED) do
-		local metric = "rust.file_lines." .. rel:match("([^/]+)%.rs$")
-		measure.ratchet(t, metric, line_count(prova.root .. "/" .. rel), { set = "quality" })
-	end
+	measure.ratchet(t, "rust.files.oversized", over, { set = "quality" })
 end)

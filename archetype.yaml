@@ -3,7 +3,7 @@
 # both audiences: archetect shows it when listing, and it is the projection source for the
 # `description` in this archetype's package-registry entry (where it is what someone choosing an
 # archetype reads).
-description: "A Rust project with its whole quality surface driven through prova — black-box proofs, the clippy wall, unwrap/expect + duplication ratchets, deputed unit tests, ratcheted coverage"
+description: "Retrofit a Rust project with a quality surface driven through prova — the clippy wall, unwrap/expect + duplication + file-size ratchets, deputed unit tests, ratcheted coverage; promptless, layout-agnostic, safe over existing files"
 authors: ["Jimmie Fulton <jimmie.fulton@gmail.com>"]
 
 requires:
