@@ -14,7 +14,7 @@ on:
 #   prova run quality --update-baseline
 #   prova run coverage --update-baseline
 #
-# Pin a specific prova with `with: { version: v0.18.0 }`; omit it to take the action's default.
+# Pin a specific prova with `with: { version: v0.19.0 }`; omit it to take the action's default.
 jobs:
   proofs:
     name: Prova

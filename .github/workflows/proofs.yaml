@@ -33,9 +33,10 @@ jobs:
       # registered one.
       #
       # `version:` is pinned deliberately rather than taking the action's default: the rendered
-      # manifest requires prova >= 0.18 (measure.ratchet, junit adoption, profile switches). Bump
-      # this in the same change that moves the `v1` tag.
+      # manifest requires prova >= 0.19 — the first release whose headless renders honor
+      # preserve-on-collision, which the preservation proofs here depend on. Bump this in the
+      # same change that moves the `v1` tag.
       - name: Run the archetype's proofs
         uses: prova-rs/run-action@v1
         with:
-          version: v0.18.0
+          version: v0.19.0
