@@ -1,0 +1,8 @@
+# This archetype proves itself: `prova` here renders the archetype into a tempdir and drives the
+# rendered project's own suite and profile legs. It is the archetype's harness, not part of the
+# scaffold — archetect renders only `contents/`, so none of this ships to a scaffolded project.
+[run]
+proofs = ["proofs"]
+
+[luals]
+manage = "auto" # this repo already owns its .luarc.json; prova stays a guest

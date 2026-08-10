@@ -1,0 +1,32 @@
+---
+# Reads as a description of what a USER gets, not of the archetype, because this one string serves
+# both audiences: archetect shows it when listing, and it is the projection source for the
+# `description` in this archetype's package-registry entry (where it is what someone choosing an
+# archetype reads).
+description: "A Rust project with its whole quality surface driven through prova — black-box proofs, the clippy wall, unwrap/expect + duplication ratchets, deputed unit tests, ratcheted coverage"
+authors: ["Jimmie Fulton <jimmie.fulton@gmail.com>"]
+
+requires:
+  archetect: "3.0.0"
+
+templating:
+  trim_blocks: true
+  lstrip_blocks: true
+
+# Registry identity — the projection source for this archetype's `archetypes/<init_key>.toml` entry in
+# a prova package-registry (see prova's docs/design/registry.md). Everything else in that entry is
+# derived at registration time: `repo` from the repository, `latest` from the released tag,
+# `description` from above.
+#
+# These two are DECLARED because neither can be derived:
+#
+#   * `init_key` is the `prova init <key>` key. Prova deliberately does not infer a key from a repo
+#     name — that convention was removed precisely so an archetype can live at any host under any
+#     name. So the key is stated here or the archetype is not registrable; registration skips a repo
+#     with no `prova.init_key`, the same way it skips a repo with no `[plugin]` manifest.
+#   * `in_package` is publisher policy: only the archetype knows whether it CREATES a package
+#     (`deny` — refuse to render over an existing manifest) or AUGMENTS one (`allow`). This one
+#     creates, so rendering it into an initialized package is an error.
+prova:
+  init_key: "rust-project"
+  in_package: "deny"

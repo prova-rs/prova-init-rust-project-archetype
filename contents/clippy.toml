@@ -1,0 +1,3 @@
+# Function-size gate: clippy::too_many_lines fires past this (proofs/quality — the census
+# ratchets the count, so oversized functions are standing debt, never silent growth).
+too-many-lines-threshold = 100

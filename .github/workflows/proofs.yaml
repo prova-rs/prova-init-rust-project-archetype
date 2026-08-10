@@ -1,0 +1,41 @@
+name: Proofs
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+
+jobs:
+  proofs:
+    name: Prova
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # The rendered project is a real Rust crate whose quality legs the suite drives end to end
+      # (build, clippy, the nextest conduct, the instrumented coverage conduct), so the runner
+      # needs the whole toolchain the scaffold's own CI would install. The rust toolchain itself
+      # ships on the runner; the cargo extensions and jscpd do not.
+      - uses: Swatinem/rust-cache@v2
+      - name: Install cargo-nextest and cargo-llvm-cov
+        uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-nextest,cargo-llvm-cov
+      - name: Install jscpd
+        run: npm install -g jscpd
+
+      # This archetype proves itself: the suite renders it into a tempdir and then drives the
+      # RENDERED project's own `prova`, so "it generated files" is never mistaken for "it works".
+      # Both the outer run and the nested ones use the prova this action puts on PATH.
+      #
+      # Green here is the gate on releasing, and a release is what updates this archetype's entry
+      # in the package-registry (`archetypes/rust-project.toml`, derived from archetype.yaml's
+      # `prova:` block). So this workflow is what stands between a broken archetype and a
+      # registered one.
+      #
+      # `version:` is pinned deliberately rather than taking the action's default: the rendered
+      # manifest requires prova >= 0.18 (measure.ratchet, junit adoption, profile switches). Bump
+      # this in the same change that moves the `v1` tag.
+      - name: Run the archetype's proofs
+        uses: prova-rs/run-action@v1
+        with:
+          version: v0.18.0

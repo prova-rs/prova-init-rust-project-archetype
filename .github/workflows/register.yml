@@ -1,0 +1,38 @@
+# Instant registration: on every published release, dispatch the register verb on
+# prova-rs/package-registry so this archetype's entry (archetypes/rust-project.toml — a projection
+# of archetype.yaml's `prova:` block plus this repo's description) is upserted with `latest` = the
+# released tag.
+#
+# The same hop the sibling init archetypes carry; only the derivation on the registry side differs
+# (archetype.yaml rather than a [plugin] manifest), and the registry decides that from what this
+# repo declares, so nothing here has to say which kind it is.
+#
+# This only fires because release.yaml hands the release-creating action a PAT. A release published
+# under GITHUB_TOKEN cannot trigger another workflow, so pointing that input back at the default token
+# disables this file without changing a line of it.
+#
+# Why release rather than green CI: `latest` is the ref `prova init rust-project` actually renders,
+# so it must name a release, not whatever `main` happens to be. The Proofs workflow is the gate ON
+# releasing; this is the consequence OF one.
+#
+# Uses PROVA_DISPATCH_TOKEN — the org-wide secret prova's own release automation already uses for
+# cross-repo work. If the dispatch ever fails, the registry's reconcile loop still picks the release up
+# within 6 hours — registration is guaranteed either way, this hop only buys latency.
+name: register
+on:
+  release:
+    types: [published]
+
+jobs:
+  register:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Dispatch registration
+        env:
+          GH_TOKEN: ${{ secrets.PROVA_DISPATCH_TOKEN }}
+        run: |
+          # repository_dispatch: reachable with the token's Contents: write — no Actions scope needed.
+          gh api repos/prova-rs/package-registry/dispatches \
+            -f event_type=register \
+            -f 'client_payload[repo]=${{ github.repository }}' \
+            -f 'client_payload[ref]=${{ github.event.release.tag_name }}'
