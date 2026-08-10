@@ -11,6 +11,14 @@
 -- the gain and retire or lower the goal — reaching a target is a decision point, never a silent
 -- pass. It is how a standing count becomes a burndown with a deadline someone actually hits.
 --
+-- A panic that IS the design exits the census through a targeted #[allow(clippy::unwrap_used)] /
+-- #[allow(clippy::expect_used)] on the item, carrying its argument in a comment — never a blanket
+-- allow. Two shapes have earned it: a build-script panic is a build failure (exactly the right
+-- outcome for a missing cargo-provided variable), and an invariant where panicking beats a silent
+-- wrong result — the vacuous green this whole surface exists to prevent. The allow suppresses the
+-- lint, so a documented exception never inflates the count you are ratcheting down: the floor
+-- keeps measuring the debt, not the design.
+--
 -- HEAVY (recompiles with the restriction lints enabled): behind the `quality` switch, same as the
 -- clippy wall. One clippy invocation feeds all three counts via a file-scoped fixture.
 
