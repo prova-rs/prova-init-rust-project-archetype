@@ -6,6 +6,11 @@
 -- establishes the floors wherever the project stands: zero on a fresh tree, the honest count on a
 -- legacy one — existing debt becomes ratcheted standing debt, not a wall of red.
 --
+-- To SCHEDULE a paydown, add a `goal` beside the metric's value in the baseline file
+-- (`"goal": 15.0`): the ratchet then FAILS the run when the goal is reached, demanding you bank
+-- the gain and retire or lower the goal — reaching a target is a decision point, never a silent
+-- pass. It is how a standing count becomes a burndown with a deadline someone actually hits.
+--
 -- HEAVY (recompiles with the restriction lints enabled): behind the `quality` switch, same as the
 -- clippy wall. One clippy invocation feeds all three counts via a file-scoped fixture.
 
