@@ -10,6 +10,7 @@
 --- guessed). See prova's proofs/coverage/coverage_test.lua for the exemplar.
 
 prova.test("line coverage does not regress past the baseline", {
+	locks = { prova.writes("cargo") },
 	requires = { "cargo-llvm-cov", "cargo-nextest" },
 }, function(t)
 	-- One conduct: instrumented build + run, report as json on stdout (test progress on stderr).

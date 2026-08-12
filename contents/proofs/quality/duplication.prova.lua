@@ -10,6 +10,9 @@
 local lib = require("lib")
 
 prova.test("token-level clone count does not regress past the baseline", {
+	-- `cargo metadata` READS workspace state a build may rewrite: coexists with other
+	-- readers, waits out any build in any instance (prova learn locks).
+	locks = { prova.reads("cargo") },
 	switch = "quality",
 	requires = { "jscpd", "cargo" },
 }, function(t)

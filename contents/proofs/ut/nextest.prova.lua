@@ -32,6 +32,10 @@ end)
 
 prova.test("the workspace's unit-test account holds — every nextest case adopted", {
 	requires = { "cargo-nextest" },
+	-- The house rule, framework-enforced (prova learn locks): cargo takes process-wide locks
+	-- of its own, so every conduct that compiles declares the writer hold — bound across every
+	-- prova instance at this home, so two agents and a human never race a build.
+	locks = { prova.writes("cargo") },
 }, function(t)
 	junit.verify(t, { results = t:use(deputy) })
 end)

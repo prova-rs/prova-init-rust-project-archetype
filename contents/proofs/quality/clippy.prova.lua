@@ -6,7 +6,11 @@
 -- `prova -s quality` is the ad-hoc door. Plain local runs hold it back, reported on the
 -- switched-off summary line.
 
-prova.test("clippy is clean (-D warnings, whole workspace)", { switch = "quality" }, function(t)
+prova.test("clippy is clean (-D warnings, whole workspace)", {
+	switch = "quality",
+	-- Compiles the workspace: a writer under the cargo house rule (prova learn locks).
+	locks = { prova.writes("cargo") },
+}, function(t)
 	local r = shell.run(
 		{ "cargo", "clippy", "--workspace", "--all-targets", "--all-features", "--", "-D", "warnings" },
 		{ cwd = prova.root, merge_stderr = true }

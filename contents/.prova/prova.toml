@@ -81,7 +81,8 @@ must_run = ["cargo"]
 
 # Declare the prova this suite needs, and an older binary says so up front instead of failing
 # mid-run on a feature it does not have. Write `>=`: the value is a semver RANGE, so a bare
-# "0.19" means "^0.19" and would refuse 0.20 and later. 0.19 is the floor because it is the
-# first prova whose renders honor preserve-on-collision — the retrofit's safety story.
+# The floor is the first prova carrying the locks grammar (`locks = { prova.writes("cargo") }`,
+# held as a flock across every prova instance — prova learn locks): on an older binary the
+# rendered house rules would be silently ignored, which is worse than a clear refusal.
 [requires]
-prova = ">= 0.19"
+prova = ">= 0.20.2"

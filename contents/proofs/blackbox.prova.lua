@@ -12,6 +12,7 @@ local lib = require("lib") -- the project's shared library package (.prova/packa
 
 prova.test("the workspace builds — the artifacts black-box proofs drive exist", {
 	requires = { "cargo" },
+	locks = { prova.writes("cargo") },
 }, function(t)
 	t:use(lib.build)
 end)
