@@ -22,13 +22,20 @@
 -- HEAVY (recompiles with the restriction lints enabled): behind the `quality` switch, same as the
 -- clippy wall. One clippy invocation feeds all three counts via a file-scoped fixture.
 
+-- No target flags: clippy's default selection is every library and binary target, never tests, and
+-- it holds for a workspace with no library. `--lib --bins` errors there ("no library targets
+-- found"), and an error read as output counted 0 of everything: a vacuous green on Herald's main
+-- until 2026-11-11 (L). So a clippy that did not run clean is a failure, never a count.
 local restrict = prova.fixture("clippy_restrict", Scope.File, function()
 	local r = shell.run(
-		{ "cargo", "clippy", "--workspace", "--lib", "--bins", "--all-features", "--",
+		{ "cargo", "clippy", "--workspace", "--all-features", "--",
 			"-W", "clippy::unwrap_used", "-W", "clippy::expect_used",
 			"-W", "clippy::too_many_lines" },
 		{ cwd = prova.root, merge_stderr = true }
 	)
+	if r.code ~= 0 then
+		error("cargo clippy did not run clean (exit " .. tostring(r.code) .. "), so nothing can be counted:\n" .. (r.stdout or ""))
+	end
 	return r.stdout or ""
 end)
 

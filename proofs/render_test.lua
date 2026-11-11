@@ -322,3 +322,43 @@ prova.describe("the retrofitted workspace", function()
 			"the junit artifact landed at the tool-config profile's path"):equals(true)
 	end)
 end)
+
+-- A binary-only project: no library target. `cargo clippy --lib --bins` errors there ("no library
+-- targets found"), and the census once counted that error as 0 of everything, a vacuous green on
+-- Herald's main until 2026-11-11. The census must count the binary's .unwrap(), and a clippy that
+-- did not run clean must fail, never read as zero.
+local bin_only = prova.fixture("bin-only-app", Scope.File, function(ctx)
+	local dir = ctx:tempdir()
+	fs.mkdir(dir .. "/src")
+	fs.write(dir .. "/README.md", HOST_README)
+	fs.write(dir .. "/.gitignore", HOST_GITIGNORE)
+	fs.write(dir .. "/Cargo.toml", table.concat({
+		"[package]",
+		'name = "bin-only-app"',
+		'version = "0.1.0"',
+		'edition = "2021"',
+		"",
+		"[dependencies]",
+		"",
+	}, "\n"))
+	fs.write(dir .. "/src/main.rs", table.concat({
+		"fn main() {",
+		"    let name = std::env::args().nth(1).unwrap();",
+		'    println!("hello, {name}");',
+		"}",
+		"",
+	}, "\n"))
+	return archetect.render({ source = ARCHETYPE, destination = dir })
+end)
+
+prova.test("a binary-only project's census counts its binary, never an error as zero", {
+	requires = { "cargo" },
+}, function(t)
+	local tree = t:use(bin_only)
+	run_suite(tree.path, "run quality --update-baseline")
+	local base = baselines(tree)
+	t:expect(base ~= nil, "the ritual wrote .prova/baselines/quality.json"):equals(true)
+	local m = base.metrics["rust.unwrap.production"]
+	t:expect(m ~= nil, "rust.unwrap.production was established"):equals(true)
+	t:expect(m.value, "the binary's .unwrap() is counted, not read as 0 from a clippy error"):equals(1)
+end)
