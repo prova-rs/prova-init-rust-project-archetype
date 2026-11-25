@@ -83,7 +83,6 @@ archetect.verify(app, {
 	expected_files = {
 		"clippy.toml",
 		".prova/prova.toml",
-		".prova/config.lua",
 		".prova/nextest.toml",
 		".prova/README.md",
 		".prova/packages/lib/init.lua",
@@ -101,6 +100,17 @@ archetect.verify(app, {
 		".github/workflows/coverage.yaml",
 	},
 })
+
+-- A fresh render must not start life on retired surface: prova warns on every retired manifest key,
+-- and a brand-new project that warns on its first run teaches its owner to ignore the warning.
+-- (v0.30 retired the `config` companion this archetype rendered until then.) `run --list` parses
+-- the manifest and runs nothing.
+prova.test("a fresh render uses no retired prova surface", function(t)
+	local tree = t:use(app)
+	local r = shell.run({ PROVA, "run", "--list" }, { cwd = tree.path, merge_stderr = true, timeout = "120s" })
+	t:expect(r.code, "`prova run --list` on the render: " .. (r.stdout or "")):equals(0)
+	t:expect((r.stdout or ""):find("deprecated", 1, true), "no deprecation warning:\n" .. (r.stdout or "")):is_nil()
+end)
 
 prova.test("the project's own files survive the render untouched", function(t)
 	local tree = t:use(app)

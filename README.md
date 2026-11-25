@@ -53,7 +53,6 @@ owning its own prompts, README, and announcement.
     ├── prova.toml              the manifest — the profile surface (quality/ut/coverage/all/ci)
     ├── nextest.toml            the junit-emitting `prova` profile, handed to nextest as tool config
     ├── README.md               documents the bar and the first-run ritual
-    ├── config.lua              the runtime companion — where capabilities are registered
     └── packages/lib/           shared proof code: cargo-metadata discovery, build/bin helpers
 ```
 
