@@ -49,7 +49,7 @@ end
 output.print("")
 output.print("Quality surface retrofitted, driven through prova:")
 output.print("  proofs/               starter proofs + the quality/ut/coverage legs")
-output.print("  .prova/               manifest (the profile surface), config, shared lib package")
+output.print("  .prova/               manifest (the profile surface), shared lib package")
 output.print("  .github/workflows/    CI running the SAME profiles via prova-rs/run-action")
 output.print("")
 output.print("The bar:")
